@@ -77,7 +77,17 @@ library SolcBigInt {
 
     //Todo: add NatSpec
     function getSingStateBI(BigInt memory bigInt) public returns(SignState signState) {
-        return bigInt.signState;
+        signState = bigInt.signState;
+    }
+
+    function negSignStateBI(SignState signState) public returns(SignState negSignState)
+    {
+        if(signState == SignState.Zero)
+        negSignState = signState;
+        else if(signState == SignState.Positive)
+        negSignState = SignState.Negative;
+        else
+        negSignState = SignState.Positive;
     }
 
     function isPositive(BigInt memory bigInt) public returns(bool flag) {
@@ -161,5 +171,259 @@ library SolcBigInt {
         uInt256Value = convertToUInt256FromBI(bigInt);
         else
         uInt256Value = 0;
+    }
+
+    function absBI(BigInt memory bigInt) public returns(BigInt memory positiveBigInt) {
+        if(isNegative(bigInt))
+        {
+            BigInt memory result = bigInt;
+            result.signState = SignState.Positive;
+            positiveBigInt = result;
+        }
+        else
+        positiveBigInt = bigInt;        
+    }
+
+    function isEqualBI(BigInt memory arg1, BigInt memory arg2) public returns(bool isEqualFlag) {
+        if(arg1.signState != arg2.signState)
+        return false;
+        else if(arg1.data.length != arg2.data.length)
+        return false;
+        else
+        {
+            bool isEqual = true;
+            for(uint i = 0; i < arg1.data.length; i++)
+                if(arg1.data[i] != arg2.data[i])
+                    isEqual = false;
+            isEqualFlag = isEqual;
+        }        
+    }
+
+    function isGreaterBI(BigInt memory arg1, BigInt memory arg2) public returns(bool isGreaterFlag) {
+        if(arg1.signState != arg2.signState)
+        {
+            if(arg1.signState == SignState.Positive)
+            isGreaterFlag = true;
+            else
+            if(arg1.signState == SignState.Negative)
+            isGreaterFlag = false;
+            else
+            if(arg2.signState == SignState.Negative)
+            isGreaterFlag = true;
+            else
+            isGreaterFlag = false;
+        }
+    }
+
+    function isLessBI(BigInt memory arg1, BigInt memory arg2) public returns(bool isLessFlag) {
+        isLessFlag = isGreaterBI(arg2, arg1);
+    }
+
+    function isGreaterOrEqualBI(BigInt memory arg1, BigInt memory arg2) 
+        public returns(bool isGreaterOfEqFlag) {
+            isGreaterOfEqFlag = !isLessBI(arg1, arg2);
+        }
+
+    function isLessOrEqualBI(BigInt memory arg1, BigInt memory arg2) 
+        public returns(bool isLessOfEqFlag) {
+            isLessOfEqFlag = !isGreaterBI(arg1, arg2);
+        }        
+
+    function maxBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory maxBigInt) {
+        if(isGreaterOrEqualBI(arg1, arg2))
+        maxBigInt = arg1;
+        else
+        maxBigInt = arg2;
+    }
+
+    function maxAbsBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory maxBigInt) {
+        maxBigInt = maxBI(absBI(arg1), absBI(arg2));
+    }
+
+    function minBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory minBigInt) {
+        if(isLessOrEqualBI(arg1, arg2))
+        minBigInt = arg1;
+        else
+        minBigInt = arg2;
+    }
+
+    function minAbsBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory maxBigInt) {
+        maxBigInt = minBI(absBI(arg1), absBI(arg2));
+    }
+
+    function addAbsBI(BigInt memory arg1, BigInt memory arg2) private returns(BigInt memory sumBigInt) {
+        BigInt memory result = maxAbsBI(arg1, arg2);
+        BigInt memory term = minAbsBI(arg1, arg2);
+        uint offsetData = 0;
+        uint module = 2 ** 128;
+        for(uint i = 0; i < result.data.length; i++)
+        {
+            uint menorResult = result.data[i] % module;            
+            uint menorTerm;
+            if(i < term.data.length)
+                menorTerm = term.data[i] % module;
+
+            uint majorResult = result.data[i] / module;
+            uint majorTerm;            
+            if(i < term.data.length)
+                majorTerm = term.data[i] / module;     
+
+            menorResult+=offsetData;
+            if(menorResult >= module)
+            {
+                majorResult++;
+                menorResult -= module;
+            }
+
+            offsetData = 0;
+            if(majorResult >= module)
+            {
+                offsetData++;
+                majorResult -= module;
+            }
+
+            menorResult += menorTerm;
+            if(menorResult >= module)
+            {
+                majorResult++;
+                menorResult -= module;
+            }
+
+            if(majorResult >= module)
+            {
+                offsetData++;
+                majorResult -= module;
+            }
+
+            majorResult += majorTerm;
+            if(majorResult >= module)
+            {
+                offsetData++;
+                majorResult -= module;
+            }
+
+            result.data[i] = majorResult * module + menorResult;
+        }
+
+        if(offsetData > 0)
+        {
+            BigInt memory correctedResult;
+            correctedResult.signState = SignState.Positive;
+            correctedResult.data = new uint[](result.data.length + 1);
+            correctedResult.data [correctedResult.data.length - 1] = offsetData;
+            for(uint i = 0; i < correctedResult.data.length - 1; i++)            
+                correctedResult.data[i] = result.data[i];
+            sumBigInt = correctedResult;
+        }
+        else
+        sumBigInt = result;
+
+    }
+    
+    function subAbsBI(BigInt memory arg1, BigInt memory arg2) private returns(BigInt memory diffBigInt) {
+        BigInt memory result = maxAbsBI(arg1, arg2);
+        BigInt memory term = minAbsBI(arg1, arg2);
+        int offsetData = 0;
+        int module = 2 ** 128;
+        uint umodule = uint(module);
+        for(uint i = 0; i < result.data.length; i++)
+        {
+            int menorResult = int(result.data[i] % umodule);            
+            int menorTerm;
+            if(i < term.data.length)
+                menorTerm = int(term.data[i] % umodule);
+
+            int majorResult = int(result.data[i] / umodule);
+            int majorTerm;            
+            if(i < term.data.length)
+                majorTerm = int(term.data[i] / umodule);     
+
+            menorResult -= offsetData;
+            if(menorResult < 0)
+            {
+                majorResult--;
+                menorResult += module;
+            }
+
+            offsetData = 0;
+            if(majorResult < 0)
+            {
+                offsetData++;
+                majorResult += module;
+            }
+
+            menorResult -= menorTerm;
+            if(menorResult < 0)
+            {
+                majorResult--;
+                menorResult += module;
+            }
+
+            if(majorResult < 0)
+            {
+                offsetData++;
+                majorResult += module;
+            }
+
+            majorResult -= majorTerm;
+            if(majorResult < 0)
+            {
+                offsetData++;
+                majorResult += module;
+            }
+
+            result.data[i] = uint(majorResult) * umodule + uint(menorResult);
+        }
+        
+        diffBigInt = result;
+
+    }
+
+    function addBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory sumBigInt) {
+        if(isZero(arg1))
+        sumBigInt = arg2;
+        else if(isZero(arg2))
+        sumBigInt = arg1;
+        else if(arg1.signState == arg2.signState)
+        {
+            BigInt memory result = addAbsBI(arg1, arg2);
+
+            result.signState = arg1.signState;            
+            sumBigInt = result;
+        }
+        else
+        {
+            BigInt memory result = subAbsBI(arg1, arg2);
+
+            if(isEqualBI(maxAbsBI(arg1, arg2), absBI(arg1)))
+            result.signState = arg1.signState;
+            else
+            result.signState = arg2.signState;            
+            sumBigInt = result;
+        }
+    }
+
+    function subBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory diffBigInt) {
+        if(isZero(arg1))
+        diffBigInt = arg2;
+        else if(isZero(arg2))
+        diffBigInt = arg1;
+        else if(arg1.signState != arg2.signState)
+        {
+            BigInt memory result = addAbsBI(arg1, arg2);
+
+            result.signState = arg1.signState;            
+            diffBigInt = result;
+        }
+        else
+        {
+            BigInt memory result = subAbsBI(arg1, arg2);
+
+            if(isEqualBI(maxAbsBI(arg1, arg2), absBI(arg1)))
+            result.signState = arg1.signState;
+            else
+            result.signState = negSignStateBI(arg1.signState);            
+            diffBigInt = result;
+        }
     }
 }
