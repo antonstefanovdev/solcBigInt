@@ -77,7 +77,17 @@ library SolcBigInt {
 
     //Todo: add NatSpec
     function getSingStateBI(BigInt memory bigInt) public returns(SignState signState) {
-        return bigInt.signState;
+        signState = bigInt.signState;
+    }
+
+    function negSignStateBI(SignState signState) public returns(SignState negSignState)
+    {
+        if(signState == SignState.Zero)
+        negSignState = signState;
+        else if(signState == SignState.Positive)
+        negSignState = SignState.Negative;
+        else
+        negSignState = SignState.Positive;
     }
 
     function isPositive(BigInt memory bigInt) public returns(bool flag) {
@@ -294,7 +304,7 @@ library SolcBigInt {
 
             result.data[i] = majorResult * module + menorResult;
         }
-        
+
         if(offsetData > 0)
         {
             BigInt memory correctedResult;
@@ -309,6 +319,111 @@ library SolcBigInt {
         sumBigInt = result;
 
     }
+    
+    function subAbsBI(BigInt memory arg1, BigInt memory arg2) private returns(BigInt memory diffBigInt) {
+        BigInt memory result = maxAbsBI(arg1, arg2);
+        BigInt memory term = minAbsBI(arg1, arg2);
+        int offsetData = 0;
+        int module = 2 ** 128;
+        uint umodule = uint(module);
+        for(uint i = 0; i < result.data.length; i++)
+        {
+            int menorResult = int(result.data[i] % umodule);            
+            int menorTerm;
+            if(i < term.data.length)
+                menorTerm = int(term.data[i] % umodule);
 
+            int majorResult = int(result.data[i] / umodule);
+            int majorTerm;            
+            if(i < term.data.length)
+                majorTerm = int(term.data[i] / umodule);     
 
+            menorResult -= offsetData;
+            if(menorResult < 0)
+            {
+                majorResult--;
+                menorResult += module;
+            }
+
+            offsetData = 0;
+            if(majorResult < 0)
+            {
+                offsetData++;
+                majorResult += module;
+            }
+
+            menorResult -= menorTerm;
+            if(menorResult < 0)
+            {
+                majorResult--;
+                menorResult += module;
+            }
+
+            if(majorResult < 0)
+            {
+                offsetData++;
+                majorResult += module;
+            }
+
+            majorResult -= majorTerm;
+            if(majorResult < 0)
+            {
+                offsetData++;
+                majorResult += module;
+            }
+
+            result.data[i] = uint(majorResult) * umodule + uint(menorResult);
+        }
+        
+        diffBigInt = result;
+
+    }
+
+    function addBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory sumBigInt) {
+        if(isZero(arg1))
+        sumBigInt = arg2;
+        else if(isZero(arg2))
+        sumBigInt = arg1;
+        else if(arg1.signState == arg2.signState)
+        {
+            BigInt memory result = addAbsBI(arg1, arg2);
+
+            result.signState = arg1.signState;            
+            sumBigInt = result;
+        }
+        else
+        {
+            BigInt memory result = subAbsBI(arg1, arg2);
+
+            if(isEqualBI(maxAbsBI(arg1, arg2), absBI(arg1)))
+            result.signState = arg1.signState;
+            else
+            result.signState = arg2.signState;            
+            sumBigInt = result;
+        }
+    }
+
+    function subBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory diffBigInt) {
+        if(isZero(arg1))
+        diffBigInt = arg2;
+        else if(isZero(arg2))
+        diffBigInt = arg1;
+        else if(arg1.signState != arg2.signState)
+        {
+            BigInt memory result = addAbsBI(arg1, arg2);
+
+            result.signState = arg1.signState;            
+            diffBigInt = result;
+        }
+        else
+        {
+            BigInt memory result = subAbsBI(arg1, arg2);
+
+            if(isEqualBI(maxAbsBI(arg1, arg2), absBI(arg1)))
+            result.signState = arg1.signState;
+            else
+            result.signState = negSignStateBI(arg1.signState);            
+            diffBigInt = result;
+        }
+    }
 }
