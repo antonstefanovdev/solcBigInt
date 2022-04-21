@@ -10,7 +10,7 @@ library SolcBigInt {
 
     /// @notice Use Zero to mark something which holds 0 or Negative|Positive in other case to express a sign
     enum SignState {
-        Negative, Positive, Zero
+        Positive, Negative, Zero
         }
 
     /** @title Main structure which express big integers (both negative and positive) 
@@ -32,7 +32,7 @@ library SolcBigInt {
     * Should be an integer in (-2**255, 2**255-1)
     */
     /// @return bigInt Express value as a BigInt structure
-    function initBI(int value) public returns (BigInt memory bigInt) {
+    function initBI(int value) public view returns (BigInt memory bigInt) {
         uint[] memory data = new uint[](1);
         if(value >= 0)
             data[0] = uint(value);
@@ -55,18 +55,21 @@ library SolcBigInt {
     * Should be an integer in (0, 2**256-1)
     */
     /// @return bigInt Express value as a BigInt structure
-    function initBI(uint value) public returns (BigInt memory bigInt) {
+    function initBI(uint value) public view returns (BigInt memory bigInt) {
         uint[] memory data = new uint[](1);
 
         BigInt memory result;
         result.data = data;
-        result.signState = SignState.Positive;
+        if(value == 0)
+            result.signState = SignState.Zero;
+        else   
+            result.signState = SignState.Positive;
 
         bigInt = result;
     }
 
     /// @dev A private function to get correst SignState item by int256 value
-    function getSignStateByVal(int value) private returns (SignState) {
+    function getSignStateByVal(int value) private view returns (SignState) {
         if(value == 0)
         return SignState.Zero;
         else if (value > 0)
@@ -76,11 +79,11 @@ library SolcBigInt {
     }
 
     //Todo: add NatSpec
-    function getSingStateBI(BigInt memory bigInt) public returns(SignState signState) {
+    function getSingStateBI(BigInt memory bigInt) public view returns(SignState signState) {
         signState = bigInt.signState;
     }
 
-    function negSignStateBI(SignState signState) public returns(SignState negSignState)
+    function negSignStateBI(SignState signState) public view returns(SignState negSignState)
     {
         if(signState == SignState.Zero)
         negSignState = signState;
@@ -90,27 +93,27 @@ library SolcBigInt {
         negSignState = SignState.Positive;
     }
 
-    function isPositive(BigInt memory bigInt) public returns(bool flag) {
+    function isPositive(BigInt memory bigInt) public view returns(bool flag) {
         return bigInt.signState == SignState.Positive;
     }
 
-    function isNegative(BigInt memory bigInt) public returns(bool flag) {
+    function isNegative(BigInt memory bigInt) public view returns(bool flag) {
         return bigInt.signState == SignState.Negative;
     }
 
-    function isPositiveOrZero(BigInt memory bigInt) public returns(bool flag) {
+    function isPositiveOrZero(BigInt memory bigInt) public view returns(bool flag) {
         return !isNegative(bigInt);
     }
 
-    function isNegativeOrZero(BigInt memory bigInt) public returns(bool flag) {
+    function isNegativeOrZero(BigInt memory bigInt) public view returns(bool flag) {
         return !isPositive(bigInt);
     }
 
-    function isZero(BigInt memory bigInt) public returns(bool flag) {
+    function isZero(BigInt memory bigInt) public view returns(bool flag) {
         return bigInt.signState == SignState.Zero;
     }
 
-    function isApplicableToInt256(BigInt memory bigInt) public returns(bool flag) {
+    function isApplicableToInt256(BigInt memory bigInt) public view returns(bool flag) {
         if(isZero(bigInt))
         flag = true;
         else if(bigInt.data.length == 1) {
@@ -125,7 +128,7 @@ library SolcBigInt {
         flag = false;
     }
 
-    function isApplicableToUInt256(BigInt memory bigInt) public returns(bool flag) {
+    function isApplicableToUInt256(BigInt memory bigInt) public view returns(bool flag) {
         if(isNegative(bigInt))
         flag = false;
         else if(isZero(bigInt))
@@ -136,7 +139,7 @@ library SolcBigInt {
         flag = false;
     }
 
-        function getSignMultiplier(BigInt memory bigInt) private returns(int) {
+        function getSignMultiplier(BigInt memory bigInt) private view returns(int) {
         if(isPositive(bigInt))
         return 1;
         else if(isNegative(bigInt))
@@ -145,35 +148,35 @@ library SolcBigInt {
         return 0;
     }
 
-    function convertToInt256FromBI(BigInt memory bigInt) public returns(int256 int256Value) {
+    function convertToInt256FromBI(BigInt memory bigInt) public view returns(int256 int256Value) {
         if(isZero(bigInt))
         int256Value = 0;
         else
         int256Value = int256(bigInt.data[0]) * getSignMultiplier(bigInt);
     }
 
-    function convertToUInt256FromBI(BigInt memory bigInt) public returns(uint256 uInt256Value) {
+    function convertToUInt256FromBI(BigInt memory bigInt) public view returns(uint256 uInt256Value) {
         if(isZero(bigInt))
         uInt256Value = 0;
         else
         uInt256Value = bigInt.data[0];
     }
 
-    function safeConvertToInt256FromBI(BigInt memory bigInt) public returns(int256 int256Value) {
+    function safeConvertToInt256FromBI(BigInt memory bigInt) public view returns(int256 int256Value) {
         if(isApplicableToInt256(bigInt))
         int256Value = convertToInt256FromBI(bigInt);
         else
         int256Value = 0;
     }
 
-    function safeConvertToUInt256FromBI(BigInt memory bigInt) public returns(uint256 uInt256Value) {
+    function safeConvertToUInt256FromBI(BigInt memory bigInt) public view returns(uint256 uInt256Value) {
         if(isApplicableToUInt256(bigInt))
         uInt256Value = convertToUInt256FromBI(bigInt);
         else
         uInt256Value = 0;
     }
 
-    function absBI(BigInt memory bigInt) public returns(BigInt memory positiveBigInt) {
+    function absBI(BigInt memory bigInt) public view returns(BigInt memory positiveBigInt) {
         if(isNegative(bigInt))
         {
             BigInt memory result = bigInt;
@@ -184,7 +187,7 @@ library SolcBigInt {
         positiveBigInt = bigInt;        
     }
 
-    function isEqualBI(BigInt memory arg1, BigInt memory arg2) public returns(bool isEqualFlag) {
+    function isEqualBI(BigInt memory arg1, BigInt memory arg2) public view returns(bool isEqualFlag) {
         if(arg1.signState != arg2.signState)
         return false;
         else if(arg1.data.length != arg2.data.length)
@@ -199,7 +202,7 @@ library SolcBigInt {
         }        
     }
 
-    function isGreaterBI(BigInt memory arg1, BigInt memory arg2) public returns(bool isGreaterFlag) {
+    function isGreaterBI(BigInt memory arg1, BigInt memory arg2) public view returns(bool isGreaterFlag) {
         if(arg1.signState != arg2.signState)
         {
             if(arg1.signState == SignState.Positive)
@@ -215,43 +218,43 @@ library SolcBigInt {
         }
     }
 
-    function isLessBI(BigInt memory arg1, BigInt memory arg2) public returns(bool isLessFlag) {
+    function isLessBI(BigInt memory arg1, BigInt memory arg2) public view returns(bool isLessFlag) {
         isLessFlag = isGreaterBI(arg2, arg1);
     }
 
     function isGreaterOrEqualBI(BigInt memory arg1, BigInt memory arg2) 
-        public returns(bool isGreaterOfEqFlag) {
+        public view returns(bool isGreaterOfEqFlag) {
             isGreaterOfEqFlag = !isLessBI(arg1, arg2);
         }
 
     function isLessOrEqualBI(BigInt memory arg1, BigInt memory arg2) 
-        public returns(bool isLessOfEqFlag) {
+        public view returns(bool isLessOfEqFlag) {
             isLessOfEqFlag = !isGreaterBI(arg1, arg2);
         }        
 
-    function maxBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory maxBigInt) {
+    function maxBI(BigInt memory arg1, BigInt memory arg2) public view returns(BigInt memory maxBigInt) {
         if(isGreaterOrEqualBI(arg1, arg2))
         maxBigInt = arg1;
         else
         maxBigInt = arg2;
     }
 
-    function maxAbsBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory maxBigInt) {
+    function maxAbsBI(BigInt memory arg1, BigInt memory arg2) public view returns(BigInt memory maxBigInt) {
         maxBigInt = maxBI(absBI(arg1), absBI(arg2));
     }
 
-    function minBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory minBigInt) {
+    function minBI(BigInt memory arg1, BigInt memory arg2) public view returns(BigInt memory minBigInt) {
         if(isLessOrEqualBI(arg1, arg2))
         minBigInt = arg1;
         else
         minBigInt = arg2;
     }
 
-    function minAbsBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory maxBigInt) {
+    function minAbsBI(BigInt memory arg1, BigInt memory arg2) public view returns(BigInt memory maxBigInt) {
         maxBigInt = minBI(absBI(arg1), absBI(arg2));
     }
 
-    function addAbsBI(BigInt memory arg1, BigInt memory arg2) private returns(BigInt memory sumBigInt) {
+    function addAbsBI(BigInt memory arg1, BigInt memory arg2) private view returns(BigInt memory sumBigInt) {
         BigInt memory result = maxAbsBI(arg1, arg2);
         BigInt memory term = minAbsBI(arg1, arg2);
         uint offsetData = 0;
@@ -320,7 +323,7 @@ library SolcBigInt {
 
     }
     
-    function subAbsBI(BigInt memory arg1, BigInt memory arg2) private returns(BigInt memory diffBigInt) {
+    function subAbsBI(BigInt memory arg1, BigInt memory arg2) private view returns(BigInt memory diffBigInt) {
         BigInt memory result = maxAbsBI(arg1, arg2);
         BigInt memory term = minAbsBI(arg1, arg2);
         int offsetData = 0;
@@ -379,7 +382,7 @@ library SolcBigInt {
 
     }
 
-    function addBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory sumBigInt) {
+    function addBI(BigInt memory arg1, BigInt memory arg2) public view returns(BigInt memory sumBigInt) {
         if(isZero(arg1))
         sumBigInt = arg2;
         else if(isZero(arg2))
@@ -403,7 +406,7 @@ library SolcBigInt {
         }
     }
 
-    function subBI(BigInt memory arg1, BigInt memory arg2) public returns(BigInt memory diffBigInt) {
+    function subBI(BigInt memory arg1, BigInt memory arg2) public view returns(BigInt memory diffBigInt) {
         if(isZero(arg1))
         diffBigInt = arg2;
         else if(isZero(arg2))
