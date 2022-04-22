@@ -199,7 +199,7 @@ library SolcBigInt {
         }        
     }
 
-    function isGreaterBI(BigInt memory arg1, BigInt memory arg2) public view returns(bool isGreaterFlag) {
+    function isGreaterBI(BigInt memory arg1, BigInt memory arg2) public view returns(bool isGreaterFlag) {        
         if(arg1.signState != arg2.signState)
         {
             if(arg1.signState == SignState.Positive)
@@ -213,6 +213,32 @@ library SolcBigInt {
             else
             isGreaterFlag = false;
         }
+        else if(isEqualBI(arg1, arg2))
+            isGreaterFlag = false;
+        else if(arg1.data.length == 1)
+        {
+            isGreaterFlag = ((arg1.data[0] > arg2.data[0]) && (arg1.signState == SignState.Positive))
+                || ((arg1.data[0] < arg2.data[0]) && (arg1.signState == SignState.Negative));
+        }
+        else if(arg1.data.length > 1)
+        {
+            if(arg1.data.length == arg2.data.length)
+            {
+                int lessLastPos = -1;
+                int greaterLastPos = -1;
+                for(uint i = 0; i < arg1.data.length; i++)
+                    if(arg1.data[i] < arg2.data[i])
+                        lessLastPos = int(i);
+                    else if(arg1.data[i] > arg2.data[i])
+                        greaterLastPos = int(i);
+                isGreaterFlag = greaterLastPos > lessLastPos;
+            }
+            else
+                isGreaterFlag = ((arg1.data.length > arg2.data.length) && (arg1.signState == SignState.Positive))
+                || ((arg1.data.length < arg2.data.length) && (arg1.signState == SignState.Negative));
+        }
+        else
+            isGreaterFlag = false;
     }
 
     function isLessBI(BigInt memory arg1, BigInt memory arg2) public view returns(bool isLessFlag) {
@@ -247,8 +273,8 @@ library SolcBigInt {
         minBigInt = arg2;
     }
 
-    function minAbsBI(BigInt memory arg1, BigInt memory arg2) public view returns(BigInt memory maxBigInt) {
-        maxBigInt = minBI(absBI(arg1), absBI(arg2));
+    function minAbsBI(BigInt memory arg1, BigInt memory arg2) public view returns(BigInt memory minBigInt) {
+        minBigInt = minBI(absBI(arg1), absBI(arg2));
     }
 
     function addAbsBI(BigInt memory arg1, BigInt memory arg2) private view returns(BigInt memory sumBigInt) {

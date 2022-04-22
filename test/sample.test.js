@@ -142,6 +142,99 @@ describe("Sample", function(){
         expect(await sample.getUIntSafe()).to.eq(0)
         expect(await sample.getIntSafe()).to.eq(-5000)
         expect(await sample.getAbsSafe()).to.eq(5000)
+    })
+
+    it("should be correst SolcBigInt public functions: test #3", async function()
+    {
+        //positive and negative: abs(pos) > abs(neg)
+        await sample.init(15)
+        await sample.init2(-5)
+        expect(await sample.e()).to.eq(false)
+        expect(await sample.g()).to.eq(true)
+        expect(await sample.l()).to.eq(false)
+
+        expect(await sample.ge()).to.eq(true)
+        expect(await sample.le()).to.eq(false)
+
+        expect(await sample.maxValI()).to.eq(15)
+        expect(await sample.maxValIAbs()).to.eq(15)
+        expect(await sample.minValI()).to.eq(-5)
+        expect(await sample.minValIAbs()).to.eq(5)
+
+        //negative and positive: abs(pos) < abs(neg)
+        await sample.init(-100)
+        await sample.initU2(20)
+        expect(await sample.e()).to.eq(false)
+        expect(await sample.g()).to.eq(false)
+        expect(await sample.l()).to.eq(true)
+        
+        expect(await sample.ge()).to.eq(false)
+        expect(await sample.le()).to.eq(true)
+        
+        expect(await sample.maxValI()).to.eq(20)
+        expect(await sample.maxValIAbs()).to.eq(100)
+        expect(await sample.minValI()).to.eq(-100)
+        expect(await sample.minValIAbs()).to.eq(20)
+
+        //two positives: int and uint
+        await sample.init(50)
+        await sample.initU2(9)
+        expect(await sample.e()).to.eq(false)
+        expect(await sample.g()).to.eq(true)
+        expect(await sample.l()).to.eq(false)
+        
+        expect(await sample.ge()).to.eq(true)
+        expect(await sample.le()).to.eq(false)
+        
+        expect(await sample.maxValI()).to.eq(50)
+        expect(await sample.maxValIAbs()).to.eq(50)
+        expect(await sample.minValI()).to.eq(9)
+        expect(await sample.minValIAbs()).to.eq(9)
+
+        //two equal negatives
+        await sample.init(-1000)
+        await sample.init2(-1000)
+        expect(await sample.e()).to.eq(true)
+        expect(await sample.g()).to.eq(false)
+        expect(await sample.l()).to.eq(false)
+        
+        expect(await sample.ge()).to.eq(true)
+        expect(await sample.le()).to.eq(true)
+        
+        expect(await sample.maxValI()).to.eq(-1000)
+        expect(await sample.maxValIAbs()).to.eq(1000)
+        expect(await sample.minValI()).to.eq(-1000)
+        expect(await sample.minValIAbs()).to.eq(1000)
+
+        //two negatives
+        await sample.init(-1000)
+        await sample.init2(-10000)
+        expect(await sample.e()).to.eq(false)
+        expect(await sample.g()).to.eq(true)
+        expect(await sample.l()).to.eq(false)
+        
+        expect(await sample.ge()).to.eq(true)
+        expect(await sample.le()).to.eq(false)
+        
+        expect(await sample.maxValI()).to.eq(-1000)
+        expect(await sample.maxValIAbs()).to.eq(10000)
+        expect(await sample.minValI()).to.eq(-10000)
+        expect(await sample.minValIAbs()).to.eq(1000)
+
+        //zero and negative
+        await sample.init(0)
+        await sample.init2(-110)
+        expect(await sample.e()).to.eq(false)
+        expect(await sample.g()).to.eq(true)
+        expect(await sample.l()).to.eq(false)
+        
+        expect(await sample.ge()).to.eq(true)
+        expect(await sample.le()).to.eq(false)
+        
+        expect(await sample.maxValI()).to.eq(0)
+        expect(await sample.maxValIAbs()).to.eq(110)
+        expect(await sample.minValI()).to.eq(-110)
+        expect(await sample.minValIAbs()).to.eq(0)
 
     })
 })

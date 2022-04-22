@@ -7,6 +7,7 @@ import {SolcBigInt} from "./solcbigint.sol";
 contract Sample {
     using SolcBigInt for *;
     SolcBigInt.BigInt public bigInt;
+    SolcBigInt.BigInt public bigInt2;
 
     //test-zone #1
     function initU(uint value) public
@@ -91,5 +92,61 @@ contract Sample {
     function getAbsSafe() public view returns(uint)
     {
         return SolcBigInt.safeConvertToUInt256FromBI(SolcBigInt.absBI(bigInt));
+    }
+
+    //test-zone #3
+    function initU2(uint value) public
+    {
+        bigInt2 = SolcBigInt.initBI(value);
+    }
+
+    function init2(int value) public
+    {
+        bigInt2 = SolcBigInt.initBI(value);
+    }
+
+    function e() public view returns(bool)
+    {
+        return SolcBigInt.isEqualBI(bigInt, bigInt2);
+    }
+
+    function g() public view returns(bool)
+    {
+        return SolcBigInt.isGreaterBI(bigInt, bigInt2);
+    }
+
+    function l() public view returns(bool)
+    {
+        return SolcBigInt.isLessBI(bigInt, bigInt2);
+    }
+
+    function ge() public view returns(bool)
+    {
+        return SolcBigInt.isGreaterOrEqualBI(bigInt, bigInt2);
+    }
+
+    function le() public view returns(bool)
+    {
+        return SolcBigInt.isLessOrEqualBI(bigInt, bigInt2);
+    }
+
+    function maxValI() public view returns(int)
+    {
+        return SolcBigInt.safeConvertToInt256FromBI(SolcBigInt.maxBI(bigInt, bigInt2));
+    }
+
+    function minValI() public view returns(int)
+    {
+        return SolcBigInt.safeConvertToInt256FromBI(SolcBigInt.minBI(bigInt, bigInt2));
+    }
+
+    function maxValIAbs() public view returns(int)
+    {
+        return SolcBigInt.safeConvertToInt256FromBI(SolcBigInt.maxAbsBI(bigInt, bigInt2));
+    }
+
+    function minValIAbs() public view returns(int)
+    {
+        return SolcBigInt.safeConvertToInt256FromBI(SolcBigInt.minAbsBI(bigInt, bigInt2));
     }
 }
