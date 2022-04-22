@@ -87,4 +87,61 @@ describe("Sample", function(){
         expect(await sample.getIsPositiveOrZeroFlag()).to.eq(false)
         expect(await sample.getIsNegativeOrZeroFlag()).to.eq(true)
     })
+
+    it("should be correst SolcBigInt public functions: test #2", async function() {
+        //positive uint
+        await sample.initU(120)
+        expect(await sample.getIsUInt()).to.eq(true)
+        expect(await sample.getIsInt()).to.eq(true)
+        expect(await sample.getUInt()).to.eq(120)
+        expect(await sample.getInt()).to.eq(120)
+
+        expect(await sample.getUIntSafe()).to.eq(120)
+        expect(await sample.getIntSafe()).to.eq(120)
+        expect(await sample.getAbsSafe()).to.eq(120)
+
+        //zero uint
+        await sample.initU(0)
+        expect(await sample.getIsUInt()).to.eq(true)
+        expect(await sample.getIsInt()).to.eq(true)
+        expect(await sample.getUInt()).to.eq(0)
+        expect(await sample.getInt()).to.eq(0)
+
+        expect(await sample.getUIntSafe()).to.eq(0)
+        expect(await sample.getIntSafe()).to.eq(0)
+        expect(await sample.getAbsSafe()).to.eq(0)
+
+        //positive int
+        await sample.init(1200)
+        expect(await sample.getIsUInt()).to.eq(true)
+        expect(await sample.getIsInt()).to.eq(true)
+        expect(await sample.getUInt()).to.eq(1200)
+        expect(await sample.getInt()).to.eq(1200)
+
+        expect(await sample.getUIntSafe()).to.eq(1200)
+        expect(await sample.getIntSafe()).to.eq(1200)
+        expect(await sample.getAbsSafe()).to.eq(1200)
+
+        //zero int
+        await sample.init(0)
+        expect(await sample.getIsUInt()).to.eq(true)
+        expect(await sample.getIsInt()).to.eq(true)
+        expect(await sample.getUInt()).to.eq(0)
+        expect(await sample.getInt()).to.eq(0)
+
+        expect(await sample.getUIntSafe()).to.eq(0)
+        expect(await sample.getIntSafe()).to.eq(0)
+        expect(await sample.getAbsSafe()).to.eq(0)
+
+        //negative int
+        await sample.init(-5000)
+        expect(await sample.getIsUInt()).to.eq(false)
+        //expect(await sample.getIsInt()).to.eq(true)
+        expect(await sample.getInt()).to.eq(-5000)
+
+        expect(await sample.getUIntSafe()).to.eq(0)
+        //expect(await sample.getIntSafe()).to.eq(-5000)
+        expect(await sample.getAbsSafe()).to.eq(5000)
+
+    })
 })

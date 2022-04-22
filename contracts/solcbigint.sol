@@ -57,6 +57,7 @@ library SolcBigInt {
     /// @return bigInt Express value as a BigInt structure
     function initBI(uint value) public view returns (BigInt memory bigInt) {
         uint[] memory data = new uint[](1);
+        data[0] = value;
 
         BigInt memory result;
         result.data = data;
@@ -157,9 +158,9 @@ library SolcBigInt {
 
     function convertToUInt256FromBI(BigInt memory bigInt) public view returns(uint256 uInt256Value) {
         if(isZero(bigInt))
-        uInt256Value = 0;
+            uInt256Value = 0;
         else
-        uInt256Value = bigInt.data[0];
+            uInt256Value = bigInt.data[0];
     }
 
     function safeConvertToInt256FromBI(BigInt memory bigInt) public view returns(int256 int256Value) {

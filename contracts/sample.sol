@@ -8,6 +8,7 @@ contract Sample {
     using SolcBigInt for *;
     SolcBigInt.BigInt public bigInt;
 
+    //test-zone #1
     function initU(uint value) public
     {
         bigInt = SolcBigInt.initBI(value);
@@ -54,5 +55,41 @@ contract Sample {
     function getIsNegativeOrZeroFlag() public view returns(bool)
     {
         return SolcBigInt.isNegativeOrZero(bigInt);
+    }
+
+    //test-zone #2
+    function getIsInt() public view returns(bool)
+    {
+        return SolcBigInt.isApplicableToInt256(bigInt);
+    }
+
+    function getIsUInt() public view returns(bool)
+    {
+        return SolcBigInt.isApplicableToUInt256(bigInt);
+    }
+
+    function getInt() public view returns(int)
+    {
+        return SolcBigInt.convertToInt256FromBI(bigInt);
+    }
+
+    function getUInt() public view returns(uint)
+    {
+        return SolcBigInt.convertToUInt256FromBI(bigInt);
+    }
+
+    function getIntSafe() public view returns(int)
+    {
+        return SolcBigInt.safeConvertToInt256FromBI(bigInt);
+    }
+
+    function getUIntSafe() public view returns(uint)
+    {
+            return SolcBigInt.safeConvertToUInt256FromBI(bigInt);
+    }
+
+    function getAbsSafe() public view returns(uint)
+    {
+        return SolcBigInt.safeConvertToUInt256FromBI(SolcBigInt.absBI(bigInt));
     }
 }
