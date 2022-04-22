@@ -136,11 +136,11 @@ describe("Sample", function(){
         //negative int
         await sample.init(-5000)
         expect(await sample.getIsUInt()).to.eq(false)
-        //expect(await sample.getIsInt()).to.eq(true)
+        expect(await sample.getIsInt()).to.eq(true)
         expect(await sample.getInt()).to.eq(-5000)
 
         expect(await sample.getUIntSafe()).to.eq(0)
-        //expect(await sample.getIntSafe()).to.eq(-5000)
+        expect(await sample.getIntSafe()).to.eq(-5000)
         expect(await sample.getAbsSafe()).to.eq(5000)
 
     })

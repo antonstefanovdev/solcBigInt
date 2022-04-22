@@ -117,16 +117,12 @@ library SolcBigInt {
     function isApplicableToInt256(BigInt memory bigInt) public view returns(bool flag) {
         if(isZero(bigInt))
         flag = true;
-        else if(bigInt.data.length == 1) {
-            if(bigInt.signState == SignState.Negative && bigInt.data[0] > uint256(-type(int256).min))
-            flag = false;
-            else if(bigInt.signState == SignState.Positive && bigInt.data[0] > uint256(type(int256).max))  
-            flag = false;
-            else
-            flag = true;          
-        }
-        else
+        else if(bigInt.data.length > 1)
         flag = false;
+        else if(isPositive(bigInt))
+        flag = bigInt.data[0] < (2**255-1);
+        else
+        flag = bigInt.data[0] < 2**255;
     }
 
     function isApplicableToUInt256(BigInt memory bigInt) public view returns(bool flag) {
