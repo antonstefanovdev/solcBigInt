@@ -149,4 +149,16 @@ contract Sample {
     {
         return SolcBigInt.safeConvertToInt256FromBI(SolcBigInt.minAbsBI(bigInt, bigInt2));
     }
+
+    //test-zone #4
+
+    function addShort() public view returns(int)
+    {
+        return SolcBigInt.safeConvertToInt256FromBI(SolcBigInt.addBI(bigInt, bigInt2));
+    }
+
+    function subShort() public view returns(int)
+    {
+        return SolcBigInt.safeConvertToInt256FromBI(SolcBigInt.subBI(bigInt, bigInt2));
+    }
 }

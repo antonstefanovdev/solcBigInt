@@ -412,9 +412,10 @@ library SolcBigInt {
         sumBigInt = arg1;
         else if(arg1.signState == arg2.signState)
         {
+            SignState state = arg1.signState;
             BigInt memory result = addAbsBI(arg1, arg2);
 
-            result.signState = arg1.signState;            
+            result.signState = state;//arg1.signState;            
             sumBigInt = result;
         }
         else
@@ -436,19 +437,22 @@ library SolcBigInt {
         diffBigInt = arg1;
         else if(arg1.signState != arg2.signState)
         {
+            SignState state = arg1.signState;
             BigInt memory result = addAbsBI(arg1, arg2);
 
-            result.signState = arg1.signState;            
+            result.signState = state;            
             diffBigInt = result;
         }
         else
         {
-            BigInt memory result = subAbsBI(arg1, arg2);
+            SignState state = arg1.signState;
+
+            BigInt memory result = subAbsBI(arg1, arg2);            
 
             if(isEqualBI(maxAbsBI(arg1, arg2), absBI(arg1)))
-            result.signState = arg1.signState;
+            result.signState = state;
             else
-            result.signState = negSignStateBI(arg1.signState);            
+            result.signState = negSignStateBI(state);            
             diffBigInt = result;
         }
     }

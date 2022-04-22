@@ -235,6 +235,41 @@ describe("Sample", function(){
         expect(await sample.maxValIAbs()).to.eq(110)
         expect(await sample.minValI()).to.eq(-110)
         expect(await sample.minValIAbs()).to.eq(0)
+    })
 
+    it("should be correst SolcBigInt public functions: test #4", async function()
+    {   
+        //two positives
+        await sample.init(20)
+        await sample.init2(50)
+        expect(await sample.addShort()).to.eq(70)
+        expect(await sample.subShort()).to.eq(-30)
+
+        await sample.init(50)
+        await sample.init2(20)
+        expect(await sample.addShort()).to.eq(70)
+        expect(await sample.subShort()).to.eq(30)
+
+        //two negatives
+        await sample.init(-200)
+        await sample.init2(-500)
+        expect(await sample.addShort()).to.eq(-700)
+        expect(await sample.subShort()).to.eq(300)
+        
+        await sample.init(-500)
+        await sample.init2(-200)
+        expect(await sample.addShort()).to.eq(-700)
+        expect(await sample.subShort()).to.eq(-300)
+
+        //positive and negative
+        await sample.init(300)
+        await sample.init2(-80)
+        expect(await sample.addShort()).to.eq(220)
+        expect(await sample.subShort()).to.eq(380)
+                
+        await sample.init(-80)
+        await sample.init2(300)
+        expect(await sample.addShort()).to.eq(220)
+        expect(await sample.subShort()).to.eq(-380)
     })
 })
